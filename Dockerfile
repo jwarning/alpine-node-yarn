@@ -1,4 +1,4 @@
-FROM mhart/alpine-node:6.9.1
+FROM mhart/alpine-node:6.9.5
 
 # fetch latest version of yarn
 RUN apk --no-cache add bash curl tar && \
@@ -16,11 +16,12 @@ WORKDIR /usr/src/app
 COPY . /usr/src/app
 
 # install dependencies and build source
-# then install only production dependencies
-RUN yarn install && \
+# then install production only dependencies
+RUN yarn install --no-progress && \
   npm run build && \
   rm -rf node_modules && \
-  yarn install --production
+  yarn install --production --no-progress && \
+  yarn cache clean
 
 # start server
 EXPOSE 3000
