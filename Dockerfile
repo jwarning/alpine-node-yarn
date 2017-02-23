@@ -1,4 +1,4 @@
-FROM mhart/alpine-node:6.9.5
+FROM node:6.9.5-alpine
 
 # fetch latest version of yarn
 RUN apk --no-cache add bash curl tar && \
@@ -8,21 +8,22 @@ RUN apk --no-cache add bash curl tar && \
 # set path to include yarn
 ENV PATH /root/.yarn/bin:$PATH
 
-# create app directory
-RUN mkdir -p /usr/src/app
+# set working directory
 WORKDIR /usr/src/app
+
+# copy package.json and yarn.lock
+COPY package.json yarn.lock /usr/src/app/
+
+# install dependencies
+RUN yarn install --pure-lockfile --no-progress \
+  && yarn cache clean
 
 # copy source
 COPY . /usr/src/app
 
-# install dependencies and build source
-# then install production only dependencies
-RUN yarn install --no-progress && \
-  npm run build && \
-  rm -rf node_modules && \
-  yarn install --production --no-progress && \
-  yarn cache clean
+# build source
+RUN npm run build
 
 # start server
 EXPOSE 3000
-CMD [ "npm", "start" ]
+CMD ["npm", "start"]
